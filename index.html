@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Purge Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:      #f0f2f5;
+  --surface: #ffffff;
+  --sur2:    #e8eaed;
+  --border:  #d1d5db;
+  --accent:  #b8860b;
+  --green:   #166534;
+  --text:    #111827;
+  --muted:   #6b7280;
+  --blue:    #1a6fa8;
+  --orange:  #c0522a;
+  --red:     #b91c1c;
+  --purple:  #6d28d9;
+}
+html { font-size: 13px; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* TOP BAR */
+.top-bar {
+  background: var(--surface); border-bottom: 2px solid var(--border);
+  padding: 0 24px; display: flex; align-items: center;
+  justify-content: space-between; height: 60px;
+  position: sticky; top: 0; z-index: 200; gap: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 3px; color: var(--accent); white-space: nowrap; }
+.logo span { color: var(--muted); margin: 0 7px; }
+.store-wrap { display: flex; align-items: center; gap: 10px; }
+.store-label { font-size: .72rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); white-space: nowrap; font-weight: 600; }
+.store-select { background: var(--sur2); border: 2px solid var(--accent); color: var(--text); border-radius: 8px; padding: 8px 16px; font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 2px; outline: none; cursor: pointer; min-width: 240px; transition: border-color .15s; }
+.store-select:focus { border-color: var(--blue); }
+.store-select option { background: #fff; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: .9rem; }
+.top-right { display: flex; align-items: center; gap: 8px; }
+.chip { font-family: 'DM Mono', monospace; font-size: .72rem; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--sur2); color: var(--muted); white-space: nowrap; }
+.chip strong { color: var(--text); }
+.user-chip { display: flex; align-items: center; gap: 6px; background: var(--sur2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px 4px 6px; font-size: .78rem; color: var(--muted); }
+.user-chip strong { color: var(--text); }
+.user-avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: .65rem; font-weight: 700; }
+.btn-sm { background: var(--sur2); border: 1px solid var(--border); color: var(--muted); border-radius: 7px; padding: 6px 12px; font-size: .8rem; cursor: pointer; transition: all .15s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+.btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+.btn-export { display: flex; align-items: center; gap: 5px; background: var(--sur2); border: 1px solid var(--border); color: var(--text); border-radius: 7px; padding: 6px 12px; font-size: .8rem; cursor: pointer; transition: all .15s; font-family: 'DM Sans', sans-serif; }
+.btn-export:hover { border-color: var(--green); color: var(--green); }
+.btn-logout { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 7px; padding: 6px 12px; font-size: .78rem; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+/* SUB NAV */
+.sub-nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; }
+.sub-tab { padding: 11px 20px; font-size: .9rem; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; transition: all .15s; white-space: nowrap; }
+.sub-tab:hover { color: var(--text); }
+.sub-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+/* VIEW BAR */
+.view-bar { background: var(--sur2); border-bottom: 1px solid var(--border); padding: 8px 24px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.view-pill { font-size: .82rem; font-weight: 600; padding: 6px 16px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; transition: all .15s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+.view-pill:hover { color: var(--text); border-color: var(--muted); }
+.view-pill.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+.view-pill[data-v="All Purge"].active   { background: #1a5276; border-color: #1a5276; }
+.view-pill[data-v="Realignment"].active { background: #1a6b9a; border-color: #1a6b9a; }
+.view-pill[data-v="One Off"].active     { background: var(--orange); border-color: var(--orange); }
+.view-pill[data-v="Purge List"].active  { background: var(--red); border-color: var(--red); }
+.view-pill[data-v="Purge Group"].active { background: var(--purple); border-color: var(--purple); }
+
+/* TYPE BAR */
+.type-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 24px; display: flex; align-items: center; gap: 12px; }
+.type-bar-label { font-size: .72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+.type-select { background: var(--sur2); border: 1px solid var(--border); color: var(--text); border-radius: 7px; padding: 6px 14px; font-size: .82rem; font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer; min-width: 200px; transition: border-color .15s; }
+.type-select:focus { border-color: var(--accent); }
+.type-select option { background: #fff; color: var(--text); }
+
+/* SUMMARY BAR */
+.summary-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 24px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.stat { display: flex; flex-direction: column; }
+.stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; line-height: 1; }
+.v-yellow { color: var(--accent); }
+.v-dark   { color: var(--text); }
+.v-red    { color: var(--red); }
+.stat-label { font-size: .65rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-top: 2px; font-weight: 600; }
+.stat-sub { font-size: .85rem; font-weight: 700; color: var(--orange); }
+.stat-sub.blue { color: var(--blue); }
+.stat-div { width: 1px; height: 36px; background: var(--border); }
+.search-right { margin-left: auto; position: relative; }
+.search-right svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.search-input { background: var(--sur2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 7px 14px 7px 34px; font-size: .88rem; font-family: 'DM Sans', sans-serif; outline: none; width: 220px; }
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--muted); }
+
+/* TABLE */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.table-outer { overflow: auto; max-height: calc(100vh - 260px); }
+table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+thead { position: sticky; top: 0; z-index: 10; }
+thead tr.group-row th { background: #e0e3e8; font-family: 'DM Mono', monospace; font-size: .7rem; text-transform: uppercase; letter-spacing: 1.5px; text-align: center; padding: 4px 6px; border-bottom: 1px solid var(--border); font-weight: 800; color: var(--muted); }
+thead tr.group-row th.g-store { color: #fff; background: #1a4a7a; border-top: 3px solid var(--blue); }
+thead tr.group-row th.g-wh    { color: #fff; background: #3a1a5a; border-top: 3px solid var(--purple); }
+thead tr.group-row th.g-sales { color: #fff; background: #1a5a32; border-top: 3px solid var(--green); }
+thead tr.group-row th.g-purge { color: #fff; background: #7a5a00; border-top: 3px solid var(--accent); }
+thead tr.col-row th { background: #e8eaed; color: var(--text); font-weight: 700; font-size: .74rem; padding: 7px 8px; text-align: left; white-space: nowrap; border-bottom: 2px solid var(--border); cursor: pointer; user-select: none; }
+thead tr.col-row th:hover { background: #dde0e5; }
+thead tr.col-row th.sorted { color: var(--accent); }
+thead tr.col-row th.c { text-align: center; }
+.sort-icon { margin-left: 3px; opacity: .35; font-size: .65rem; }
+.sorted .sort-icon { opacity: 1; }
+tbody tr { border-bottom: 1px solid var(--border); }
+tbody tr:nth-child(even) { background: #f7f8fa; }
+tbody tr:nth-child(odd)  { background: #ffffff; }
+tbody tr:hover { background: #eef2f8; }
+tbody tr.sibling-row { background: #fafbfc; opacity: .88; }
+tbody tr.sibling-row:hover { background: #eef2f8; opacity: 1; }
+tbody tr.parent-divider td { padding: 0; height: 2px; background: #c8cdd6; border: none; border-top: 2px solid #b0b8c8; }
+td { padding: 5px 8px; vertical-align: middle; white-space: nowrap; font-size: .78rem; color: var(--text); }
+td.c { text-align: center; }
+td.zero-sale { background: #fee2e2 !important; color: #991b1b !important; font-weight: 600; }
+
+.yn { display: inline-block; font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; border: 1px solid; text-transform: uppercase; }
+.yn-yes { color: #166534; border-color: #bbf7d0; background: #dcfce7; }
+.yn-no  { color: #991b1b; border-color: #fecaca; background: #fee2e2; }
+.badge { display: inline-block; font-size: .68rem; font-weight: 700; padding: 2px 9px; border-radius: 4px; border: 1px solid; text-transform: uppercase; }
+.b-re  { color: #1e40af; border-color: #bfdbfe; background: #dbeafe; }
+.b-one { color: #9a3412; border-color: #fed7aa; background: #ffedd5; }
+.b-sta { color: #166534; border-color: #bbf7d0; background: #dcfce7; }
+.b-oth { color: var(--muted); border-color: var(--border); background: var(--sur2); }
+.sizes-avail { color: var(--blue); font-size: .75rem; }
+.purge-hi { color: var(--red); font-weight: 700; font-family: 'DM Mono', monospace; }
+.sibling-indicator { color: var(--muted); font-size: .68rem; font-style: italic; }
+
+/* NEW LAUNCH TABLE */
+.nl-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.nl-table thead th { background: #e8eaed; color: var(--text); font-weight: 700; font-size: .8rem; padding: 9px 14px; text-align: left; white-space: nowrap; border-bottom: 2px solid var(--border); }
+.nl-table tbody tr { border-bottom: 1px solid var(--border); }
+.nl-table tbody tr:nth-child(even) { background: #f7f8fa; }
+.nl-table tbody tr:nth-child(odd)  { background: #ffffff; }
+.nl-table tbody tr:hover { background: #eef2f8; }
+.nl-table td { padding: 8px 14px; color: var(--text); }
+.badge-nl { display: inline-block; font-size: .68rem; font-weight: 700; padding: 2px 9px; border-radius: 4px; border: 1px solid; text-transform: uppercase; }
+.badge-new    { color: #166534; border-color: #bbf7d0; background: #dcfce7; }
+.badge-restock{ color: #1e40af; border-color: #bfdbfe; background: #dbeafe; }
+.nl-search-bar { padding: 10px 24px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.nl-search-input { background: var(--sur2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 7px 14px; font-size: .88rem; font-family: 'DM Sans', sans-serif; outline: none; width: 240px; }
+.nl-search-input:focus { border-color: var(--accent); }
+.nl-search-input::placeholder { color: var(--muted); }
+.nl-count { margin-left: auto; font-family: 'DM Mono', monospace; font-size: .75rem; color: var(--muted); }
+.nl-count strong { color: var(--text); }
+
+/* LOGIN */
+.login-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+.login-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px 44px; width: 360px; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 4px 24px rgba(0,0,0,.10); }
+.login-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 3px; color: var(--accent); text-align: center; }
+.login-sub { font-size: .75rem; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-top: -10px; }
+.login-divider { height: 1px; background: var(--border); }
+.login-field { display: flex; flex-direction: column; gap: 5px; }
+.login-field label { font-size: .75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.login-field input { background: var(--sur2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 10px 14px; font-size: .9rem; font-family: 'DM Sans', sans-serif; outline: none; }
+.login-field input:focus { border-color: var(--accent); }
+.login-err { color: #991b1b; font-size: .78rem; display: none; background: #fee2e2; border: 1px solid #fecaca; border-radius: 6px; padding: 7px 12px; }
+.login-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 12px; font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 2px; cursor: pointer; }
+.login-btn:hover { opacity: .85; }
+.login-btn:disabled { opacity: .5; cursor: not-allowed; }
+.login-loading { text-align: center; font-size: .8rem; color: var(--muted); display: none; }
+
+/* LOADING */
+.load-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 990; transition: opacity .5s; }
+.load-screen.done { opacity: 0; pointer-events: none; }
+.load-logo { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; letter-spacing: 4px; color: var(--accent); margin-bottom: 6px; }
+.load-sub { font-size: .78rem; color: var(--muted); margin-bottom: 28px; letter-spacing: 1.5px; text-transform: uppercase; }
+.progress-wrap { width: 340px; background: var(--sur2); border-radius: 20px; height: 5px; overflow: hidden; margin-bottom: 12px; }
+.progress-bar { height: 100%; background: var(--accent); border-radius: 20px; width: 0%; transition: width .4s ease; }
+.load-msg { font-size: .8rem; color: var(--muted); }
+.center-msg { text-align: center; padding: 60px 20px; color: var(--muted); }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-title">Purge / Dashboard</div>
+    <div class="login-sub">State and Liberty Clothing</div>
+    <div class="login-divider"></div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="login-user" placeholder="Enter username" autocomplete="username"
+        onkeydown="if(event.key==='Enter')document.getElementById('login-pass').focus()" />
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="Enter password" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <div class="login-err" id="login-err">Incorrect username or password.</div>
+    <div class="login-loading" id="login-loading">Verifying credentials…</div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">SIGN IN</button>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="load-screen done" id="load-screen">
+  <div class="load-logo">Purge / Dashboard</div>
+  <div class="load-sub">State and Liberty Clothing</div>
+  <div class="progress-wrap"><div class="progress-bar" id="prog"></div></div>
+  <div class="load-msg" id="load-msg">Loading data…</div>
+</div>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="logo">Purge <span>/</span> Dashboard</div>
+  <div class="store-wrap">
+    <span class="store-label">Store</span>
+    <select class="store-select" id="store-select" onchange="switchStore(this.value)">
+      <option value="">— loading —</option>
+    </select>
+  </div>
+  <div class="top-right">
+    <div class="user-chip">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <strong id="user-label">—</strong>
+    </div>
+    <div class="chip">As of: <strong id="meta-date">—</strong></div>
+    <button class="btn-sm" onclick="reloadAll()">↺ Refresh</button>
+    <button class="btn-export" onclick="handleExportCSV()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      CSV
+    </button>
+    <button class="btn-logout" onclick="doLogout()">Sign Out</button>
+  </div>
+</div>
+
+<!-- SUB NAV -->
+<div class="sub-nav">
+  <div class="sub-tab active" onclick="switchTab('purge',this)">📋 Store Dashboard</div>
+  <div class="sub-tab" onclick="switchTab('newlaunch',this)">🚀 New Launch / Restock</div>
+  <div class="sub-tab" onclick="switchTab('oos',this)">🔴 Store OOS</div>
+</div>
+
+<!-- TAB 1 -->
+<div class="tab-content active" id="tab-purge">
+  <div class="view-bar">
+    <button class="view-pill" data-v="Purge Group"  onclick="setView('Purge Group',this)">Purge Group</button>
+    <button class="view-pill" data-v="All Purge"    onclick="setView('All Purge',this)">All Purge</button>
+    <button class="view-pill" data-v="Realignment"  onclick="setView('Realignment',this)">Realignment</button>
+    <button class="view-pill" data-v="One Off"       onclick="setView('One Off',this)">One Off</button>
+    <button class="view-pill active" data-v="Purge List" onclick="setView('Purge List',this)">Purge List</button>
+  </div>
+  <div class="type-bar">
+    <span class="type-bar-label">Product Type</span>
+    <select class="type-select" id="type-select" onchange="setType(this.value)">
+      <option value="All">All Types</option>
+    </select>
+  </div>
+  <div class="summary-bar">
+    <div class="stat"><span class="stat-val v-yellow" id="s-items">0</span><span class="stat-label">Items</span></div>
+    <div class="stat-div"></div>
+    <div class="stat"><span class="stat-val v-dark" id="s-onhand">0</span><span class="stat-label">Total on Hand</span></div>
+    <div class="stat-div"></div>
+    <div class="stat"><span class="stat-val v-red" id="s-purge">0</span><span class="stat-label">Total Purge Qty</span></div>
+    <div class="stat-div"></div>
+    <div class="stat"><span class="stat-sub" id="s-oneoff">0 (0 units)</span><span class="stat-label">One Off</span></div>
+    <div class="stat-div"></div>
+    <div class="stat"><span class="stat-sub blue" id="s-realign">0 (0 units)</span><span class="stat-label">Realignment</span></div>
+    <div class="search-right">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" type="text" id="search" placeholder="Search products…" oninput="renderTable()" />
+    </div>
+  </div>
+  <div class="table-outer" id="table-outer"><div class="center-msg">Loading…</div></div>
+</div>
+
+<!-- TAB 2 -->
+<div class="tab-content" id="tab-newlaunch">
+  <div class="nl-search-bar">
+    <input class="nl-search-input" type="text" id="nl-search" placeholder="Search item name…" oninput="renderNewLaunch()" />
+    <span class="type-bar-label" style="margin-left:10px">Type</span>
+    <select class="type-select" id="nl-type-select" onchange="setNlType(this.value)">
+      <option value="All">All Types</option>
+    </select>
+    <div class="nl-count">Showing <strong id="nl-count">0</strong> items</div>
+  </div>
+  <div class="table-outer" id="nl-table-outer"><div class="center-msg">Loading…</div></div>
+</div>
+
+<!-- TAB 3 -->
+<div class="tab-content" id="tab-oos">
+  <div class="nl-search-bar">
+    <input class="nl-search-input" type="text" id="oos-search" placeholder="Search product name…" oninput="renderOos()" />
+    <span class="type-bar-label" style="margin-left:10px">Type</span>
+    <select class="type-select" id="oos-type-select" onchange="setOosType(this.value)">
+      <option value="All">All Types</option>
+    </select>
+    <div class="nl-count">Showing <strong id="oos-count">0</strong> OOS items</div>
+  </div>
+  <div class="table-outer" id="oos-table-outer"><div class="center-msg">Loading…</div></div>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbzxXQAUpcrQAICPFz00oJ7KcLOXK0D-58RBXJV-ujKl0YG6ODr-aoTHVS3CijS72LF5-A/exec';
+
+let allData = {}, groupData = {}, oosData = {}, newLaunch = [];
+let headers = [], stores = [], allowedStores = [];
+let activeStore = '', activeView = 'Purge List';
+let activeType = 'All', activeNlType = 'All', activeOosType = 'All';
+let activeTabId = 'purge', sortCol = -1, sortAsc = true;
+let currentUser = '';
+
+const EXCLUDED  = ['accessory','belt','scarf','pocket square','ties'];
+const SALE_COLS = ['L30','L60','L90','Avg Weekly Sales','Avg Monthly Sales'];
+const TEXT_COLS = ['Sizes OH','Size','ETA','Reason','WHSE INV','ON Order','Product Type','Parent Name','Store Intransit','# of Days to Arrive'];
+
+// Available Sizes intentionally excluded from display
+const COL_GROUPS = [
+  { label: '',           cls: '',        cols: ['Product Type','Parent Name','Size'] },
+  { label: 'Store Data', cls: 'g-store', cols: ['Store Onhand','Store Intransit','Sizes OH'] },
+  { label: 'WH Data',    cls: 'g-wh',    cols: ['WHSE INV','ON Order','ETA','# of Days to Arrive'] },
+  { label: 'Sales Data', cls: 'g-sales', cols: ['Avg Weekly Sales','Avg Monthly Sales','L30','L60','L90'] },
+  { label: 'Purge Data', cls: 'g-purge', cols: ['Purge Quantity','Reason'] },
+];
+
+// ── SESSION / LOGIN ───────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const sess = sessionStorage.getItem('dash_sess');
+  if (sess) {
+    try {
+      const s = JSON.parse(sess);
+      currentUser   = s.user;
+      allowedStores = s.stores || [];
+      applyUser();
+      loadAll();
+    } catch(e) { sessionStorage.removeItem('dash_sess'); }
+  } else {
+    setTimeout(() => document.getElementById('login-user').focus(), 100);
+  }
+});
+
+async function doLogin() {
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value.trim();
+  if (!user || !pass) { showLoginErr('Please enter username and password.'); return; }
+  document.getElementById('login-err').style.display     = 'none';
+  document.getElementById('login-loading').style.display = 'block';
+  document.getElementById('login-btn').disabled = true;
+  try {
+    const res  = await fetch(`${API_URL}?action=login&user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}&t=${Date.now()}`);
+    const data = await res.json();
+    if (!data.ok) { showLoginErr(data.message || 'Incorrect username or password.'); return; }
+    currentUser   = data.displayName || user;
+    allowedStores = data.stores || [];
+    sessionStorage.setItem('dash_sess', JSON.stringify({ user: currentUser, stores: allowedStores }));
+    document.getElementById('login-screen').style.display = 'none';
+    applyUser();
+    loadAll();
+  } catch(e) { showLoginErr('Connection error — please try again.'); }
+  finally {
+    document.getElementById('login-loading').style.display = 'none';
+    document.getElementById('login-btn').disabled = false;
+  }
+}
+
+function showLoginErr(msg) {
+  const el = document.getElementById('login-err');
+  el.textContent = msg; el.style.display = 'block';
+  document.getElementById('login-loading').style.display = 'none';
+  document.getElementById('login-btn').disabled = false;
+}
+
+function applyUser() {
+  document.getElementById('user-label').textContent  = currentUser;
+  document.getElementById('user-avatar').textContent = currentUser.charAt(0).toUpperCase();
+}
+
+function doLogout() {
+  sessionStorage.removeItem('dash_sess');
+  location.reload();
+}
+
+// ── LOAD DATA ─────────────────────────────────────────────
+async function loadAll() {
+  const ls = document.getElementById('load-screen');
+  ls.classList.remove('done');
+  setProgress(5, 'Connecting to Google Sheet…');
+  try {
+    const steps = [[15,'Reading SKU data…'],[35,'Reading inventory…'],[55,'Reading sales data…'],[75,'Computing metrics…'],[88,'Building views…'],[93,'Almost ready…']];
+    let si = 0;
+    const st = setInterval(() => { if (si < steps.length) { setProgress(steps[si][0], steps[si][1]); si++; } }, 10000);
+    const res = await fetch(API_URL + '?t=' + Date.now());
+    clearInterval(st);
+    setProgress(93, 'Processing…');
+    let data;
+    try { data = await res.json(); } catch(e) { throw new Error('API did not return valid JSON'); }
+    if (data.error) throw new Error(data.error);
+
+    headers   = data.headers   || [];
+    allData   = data.data      || {};
+    groupData = data.groupData || {};
+    oosData   = data.oosData   || {};
+    newLaunch = data.newLaunch || [];
+    stores    = data.stores    || Object.keys(allData);
+
+    // Filter by allowed stores
+    const isAll = allowedStores.length === 0 ||
+      allowedStores.some(s => /all\s*stores?/i.test(s));
+    const visible = isAll ? stores : stores.filter(s =>
+      allowedStores.some(a => a.trim().toLowerCase() === s.trim().toLowerCase())
+    );
+
+    const sel = document.getElementById('store-select');
+    sel.innerHTML = '';
+    visible.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });
+
+    activeStore = (visible.includes(data.meta?.defaultStore) ? data.meta.defaultStore : null) || visible[0] || '';
+    sel.value   = activeStore;
+    if (data.meta?.asOf) document.getElementById('meta-date').textContent = data.meta.asOf;
+
+    buildTypeDropdown(); renderTable();
+    buildNlTypeDropdown(); renderNewLaunch();
+    buildOosTypeDropdown(); renderOos();
+    setProgress(100, 'Ready!');
+    setTimeout(() => ls.classList.add('done'), 500);
+  } catch(e) {
+    setProgress(100, '⚠️ ' + e.message);
+    setTimeout(() => ls.classList.add('done'), 3000);
+  }
+}
+
+async function reloadAll() {
+  const ls = document.getElementById('load-screen');
+  ls.classList.remove('done'); setProgress(5, 'Rebuilding…');
+  try {
+    const res  = await fetch(API_URL + '?action=forceRefresh&t=' + Date.now());
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    headers = data.headers||[]; allData = data.data||{}; groupData = data.groupData||{};
+    oosData = data.oosData||{}; newLaunch = data.newLaunch||[]; stores = data.stores||Object.keys(allData);
+    if (data.meta?.asOf) document.getElementById('meta-date').textContent = data.meta.asOf;
+    buildTypeDropdown(); renderTable(); buildNlTypeDropdown(); renderNewLaunch(); buildOosTypeDropdown(); renderOos();
+    setProgress(100, 'Done!');
+    setTimeout(() => ls.classList.add('done'), 600);
+  } catch(e) { setProgress(100, '⚠️ '+e.message); setTimeout(() => ls.classList.add('done'), 2000); }
+}
+
+function setProgress(p, m) { document.getElementById('prog').style.width=p+'%'; document.getElementById('load-msg').textContent=m; }
+
+// ── TABS ──────────────────────────────────────────────────
+function switchTab(id, el) {
+  activeTabId = id;
+  document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active')); el.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+}
+
+function switchStore(s) {
+  activeStore = s; activeType = 'All'; activeOosType = 'All';
+  buildTypeDropdown(); renderTable(); buildOosTypeDropdown(); renderOos();
+}
+
+function setView(v, el) {
+  activeView = v;
+  document.querySelectorAll('.view-pill').forEach(p => p.classList.remove('active')); el.classList.add('active');
+  activeType = 'All'; const sel = document.getElementById('type-select'); if (sel) sel.value = 'All';
+  buildTypeDropdown(); renderTable();
+}
+
+// ── TYPE DROPDOWNS ────────────────────────────────────────
+function buildTypeDropdown() {
+  const rows  = activeView === 'Purge Group' ? (groupData[activeStore]||[]) : (allData[activeStore]||[]);
+  const types = [...new Set(rows.map(r => String(r['Product Type']||'')).filter(Boolean))].sort();
+  const sel   = document.getElementById('type-select'); if (!sel) return;
+  const cur   = sel.value || 'All';
+  sel.innerHTML = '<option value="All">All Types</option>';
+  types.forEach(t => { const o = document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o); });
+  sel.value = types.includes(cur) ? cur : 'All';
+}
+function setType(v) { activeType = v; renderTable(); }
+
+function buildNlTypeDropdown() {
+  const types = [...new Set(newLaunch.map(r => String(r['Product Type']||'')).filter(Boolean))].sort();
+  const sel   = document.getElementById('nl-type-select'); if (!sel) return;
+  sel.innerHTML = '<option value="All">All Types</option>';
+  types.forEach(t => { const o = document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o); });
+}
+function setNlType(v) { activeNlType = v; renderNewLaunch(); }
+
+function buildOosTypeDropdown() {
+  const types = [...new Set((oosData[activeStore]||[]).map(r => String(r['Product Type']||'')).filter(Boolean))].sort();
+  const sel   = document.getElementById('oos-type-select'); if (!sel) return;
+  sel.innerHTML = '<option value="All">All Types</option>';
+  types.forEach(t => { const o = document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o); });
+}
+function setOosType(v) { activeOosType = v; renderOos(); }
+
+// ── FILTER ────────────────────────────────────────────────
+function getFilteredRows() {
+  const q = (document.getElementById('search')?.value||'').toLowerCase();
+  if (activeView === 'Purge Group') {
+    return (groupData[activeStore]||[]).filter(r => {
+      const type = String(r['Product Type']||'').toLowerCase().trim();
+      if (EXCLUDED.includes(type)) return false;
+      if (activeType !== 'All' && String(r['Product Type']||'') !== activeType) return false;
+      if (q && !String(r['Parent Name']||'').toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }
+  const rows = allData[activeStore]||[];
+  const isRe = activeView === 'Realignment', isOO = activeView === 'One Off';
+  const primary = rows.filter(r => {
+    const type = String(r['Product Type']||'').toLowerCase().trim();
+    if (EXCLUDED.includes(type)) return false;
+    if (activeType !== 'All' && String(r['Product Type']||'') !== activeType) return false;
+    if (q && !String(r['Parent Name']||'').toLowerCase().includes(q)) return false;
+    const reason = String(r['Reason']||'').trim(), pq = parseFloat(r['Purge Quantity'])||0;
+    switch (activeView) {
+      case 'All Purge':   return pq>0 && reason!=='New';
+      case 'Realignment': return pq>0 && reason==='Realignment';
+      case 'One Off':     return pq>0 && reason==='One Off';
+      case 'Purge List':  return pq>0 && reason!=='Staple' && reason!=='' && reason!=='New';
+      default: return true;
+    }
+  });
+  if (!isRe && !isOO) return primary;
+  const pParents = new Set(primary.map(r => r['Parent Name']));
+  const sibAdded = new Set(), result = [], grouped = {};
+  primary.forEach(r => { const p=r['Parent Name']; if (!grouped[p]) grouped[p]=[]; grouped[p].push({...r,_isPrimary:true}); });
+  pParents.forEach(parent => {
+    const psizes = new Set((grouped[parent]||[]).map(r=>r['Size']));
+    const sibs   = rows.filter(r => r['Parent Name']===parent && !psizes.has(r['Size']) && !EXCLUDED.includes(String(r['Product Type']||'').toLowerCase().trim()));
+    (grouped[parent]||[]).forEach(r => result.push(r));
+    sibs.forEach(r => { const k=r['Size']+'|'+parent; if (!sibAdded.has(k)) { result.push({...r,_isSibling:true}); sibAdded.add(k); } });
+  });
+  return result;
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────
+function renderTable() {
+  let rows = getFilteredRows();
+  if (sortCol >= 0 && sortCol < headers.length) {
+    const key = headers[sortCol];
+    rows = [...rows].sort((a,b) => {
+      let av=a[key], bv=b[key]; const an=parseFloat(av), bn=parseFloat(bv);
+      if (!isNaN(an)&&!isNaN(bn)) { av=an; bv=bn; } else { av=String(av||'').toLowerCase(); bv=String(bv||'').toLowerCase(); }
+      return sortAsc ? (av>bv?1:av<bv?-1:0) : (av<bv?1:av>bv?-1:0);
+    });
+  }
+  updateSummary(rows.filter(r => !r._isSibling));
+  const dispCols = COL_GROUPS.flatMap(g => g.cols.filter(c => headers.includes(c)));
+  const cols     = dispCols.length ? dispCols : headers;
+
+  let gHtml = '<tr class="group-row">';
+  COL_GROUPS.forEach(g => { const ex=g.cols.filter(c=>headers.includes(c)); if (!ex.length) return; gHtml+=`<th colspan="${ex.length}" class="${g.cls}">${g.label}</th>`; });
+  gHtml += '</tr>';
+
+  let cHtml = '<tr class="col-row">';
+  cols.forEach(col => {
+    const idx=headers.indexOf(col), sorted=sortCol===idx, arrow=sorted?(sortAsc?'↑':'↓'):'↕';
+    const align=isCtr(col)?' c':'';
+    cHtml+=`<th class="${sorted?'sorted':''}${align}" onclick="sortBy(${idx})">${col} <span class="sort-icon">${arrow}</span></th>`;
+  });
+  cHtml += '</tr>';
+
+  let body = '';
+  if (!rows.length) {
+    body=`<tr><td colspan="${cols.length}" style="text-align:center;padding:40px;color:var(--muted)">No items match this filter.</td></tr>`;
+  } else {
+    let lastParent = null;
+    rows.forEach(r => {
+      const isSib=r._isSibling, parent=r['Parent Name'];
+      if (!isSib && parent!==lastParent && lastParent!==null) body+=`<tr class="parent-divider"><td colspan="${cols.length}"></td></tr>`;
+      if (!isSib) lastParent=parent;
+      body+=`<tr${isSib?' class="sibling-row"':''}>` + cols.map(c=>cell(c,r[c],isSib)).join('') + '</tr>';
+    });
+  }
+  document.getElementById('table-outer').innerHTML = `<table><thead>${gHtml}${cHtml}</thead><tbody>${body}</tbody></table>`;
+}
+
+function cell(col, val, isSib) {
+  const s = String(val===null||val===undefined?'':val).trim();
+  if (s==='Yes') return `<td class="c"><span class="yn yn-yes">Yes</span></td>`;
+  if (s==='No')  return `<td class="c"><span class="yn yn-no">No</span></td>`;
+  if (col==='Reason') {
+    if (isSib) return `<td><span class="sibling-indicator">sibling size</span></td>`;
+    if (s==='Realignment') return `<td><span class="badge b-re">Realignment</span></td>`;
+    if (s==='One Off')     return `<td><span class="badge b-one">One Off</span></td>`;
+    if (s==='Staple')      return `<td><span class="badge b-sta">Staple</span></td>`;
+    if (s) return `<td><span class="badge b-oth">${s}</span></td>`;
+    return `<td style="color:var(--muted)">—</td>`;
+  }
+  if (col==='Sizes OH') {
+    if (!s) return `<td style="color:var(--muted)">—</td>`;
+    if (s.toLowerCase().includes('all sizes')) return `<td class="sizes-avail">${s}</td>`;
+    return `<td>${s}</td>`;
+  }
+  if (col==='Purge Quantity') {
+    const n=parseFloat(s);
+    return (!isNaN(n)&&n>0) ? `<td class="c purge-hi">${n}</td>` : `<td class="c" style="color:var(--muted)">—</td>`;
+  }
+  if (SALE_COLS.includes(col)) {
+    const n=parseFloat(s), zero=isNaN(n)||n<=0||s==='';
+    const disp=isNaN(n)||s===''?'—':(Number.isInteger(n)?n.toLocaleString():n.toFixed(1));
+    return `<td class="c${zero?' zero-sale':''}" style="font-family:'DM Mono',monospace;font-size:.75rem">${disp}</td>`;
+  }
+  if (['Store Onhand','Store Intransit','# of Days to Arrive','ETA'].includes(col)) {
+    const n=parseFloat(s);
+    if (!isNaN(n)&&s!=='') return `<td class="c" style="font-family:'DM Mono',monospace;font-size:.75rem">${Number.isInteger(n)?n.toLocaleString():n.toFixed(1)}</td>`;
+    return `<td class="c">${s||'<span style="color:var(--muted)">—</span>'}</td>`;
+  }
+  if (col==='Size') return `<td class="c">${s||'—'}</td>`;
+  return `<td>${s||'<span style="color:var(--muted)">—</span>'}</td>`;
+}
+
+function updateSummary(rows) {
+  const sum=(arr,k)=>arr.reduce((s,r)=>{const n=parseFloat(r[k]);return s+(isNaN(n)?0:n);},0);
+  const one=rows.filter(r=>r['Reason']==='One Off'), re=rows.filter(r=>r['Reason']==='Realignment');
+  document.getElementById('s-items').textContent  = rows.length.toLocaleString();
+  document.getElementById('s-onhand').textContent = sum(rows,'Store Onhand').toLocaleString();
+  document.getElementById('s-purge').textContent  = sum(rows,'Purge Quantity').toLocaleString();
+  document.getElementById('s-oneoff').textContent = `${one.length} (${sum(one,'Purge Quantity')} units)`;
+  document.getElementById('s-realign').textContent= `${re.length} (${sum(re,'Purge Quantity')} units)`;
+}
+
+// ── NEW LAUNCH ────────────────────────────────────────────
+function getFilteredNewLaunch() {
+  const q=(document.getElementById('nl-search')?.value||'').toLowerCase();
+  return newLaunch.filter(r => {
+    if (activeNlType!=='All' && String(r['Product Type']||'')!==activeNlType) return false;
+    if (q && !String(r['Item Name']||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+function renderNewLaunch() {
+  const rows=getFilteredNewLaunch();
+  document.getElementById('nl-count').textContent=rows.length.toLocaleString();
+  if (!rows.length) { document.getElementById('nl-table-outer').innerHTML='<div class="center-msg">No items match.</div>'; return; }
+  const cols=['Product Type','Item Name','Estimated ETA to Stores','New Launch/Restock'].filter(c=>rows[0].hasOwnProperty(c));
+  const dc=cols.length?cols:Object.keys(rows[0]||{});
+  document.getElementById('nl-table-outer').innerHTML=
+    `<table class="nl-table"><thead><tr>${dc.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${dc.map(c=>nlCell(c,r[c])).join('')}</tr>`).join('')}</tbody></table>`;
+}
+function nlCell(col,val) {
+  const s=String(val===null||val===undefined?'':val).trim();
+  if (col==='New Launch/Restock') {
+    if (s==='New Launch') return `<td><span class="badge-nl badge-new">New Launch</span></td>`;
+    if (s==='Restock')    return `<td><span class="badge-nl badge-restock">Restock</span></td>`;
+    if (s) return `<td><span class="badge-nl b-oth">${s}</span></td>`;
+    return `<td style="color:var(--muted)">—</td>`;
+  }
+  return `<td>${s||'<span style="color:var(--muted)">—</span>'}</td>`;
+}
+
+// ── OOS ───────────────────────────────────────────────────
+function getFilteredOos() {
+  const q=(document.getElementById('oos-search')?.value||'').toLowerCase();
+  return (oosData[activeStore]||[]).filter(r => {
+    if (activeOosType!=='All' && String(r['Product Type']||'')!==activeOosType) return false;
+    if (q && !String(r['Parent Name']||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+function renderOos() {
+  const filtered=getFilteredOos();
+  const ce=document.getElementById('oos-count'); if (ce) ce.textContent=filtered.length.toLocaleString();
+  const outer=document.getElementById('oos-table-outer'); if (!outer) return;
+  if (!filtered.length) { outer.innerHTML='<div class="center-msg">No OOS items for this store.</div>'; return; }
+  const cols=['Product Type','Parent Name','Size','Store Onhand','Store Intransit','WHSE INV','ON Order','ETA','# of Days to Arrive','Avg Weekly Sales','Avg Monthly Sales','L30','L60','L90','Store Options'];
+  const gh=`<tr class="group-row"><th colspan="3"></th><th colspan="2" class="g-store">Store Data</th><th colspan="4" class="g-wh">WH Data</th><th colspan="5" class="g-sales">Sales Data</th><th colspan="1" style="background:#7a5a00;color:#fff;border-top:3px solid var(--accent)">Options</th></tr>`;
+  const ch=`<tr class="col-row">${cols.map(c=>`<th class="${['Store Onhand','Store Intransit','L30','L60','L90','Avg Weekly Sales','Avg Monthly Sales','# of Days to Arrive'].includes(c)?' c':''}">${c}</th>`).join('')}</tr>`;
+  let lp=null, body='';
+  filtered.forEach(r => {
+    const p=r['Parent Name'];
+    if (p!==lp && lp!==null) body+=`<tr class="parent-divider"><td colspan="${cols.length}"></td></tr>`;
+    lp=p; body+='<tr>'+cols.map(c=>oosCell(c,r[c])).join('')+'</tr>';
+  });
+  outer.innerHTML=`<table><thead>${gh}${ch}</thead><tbody>${body}</tbody></table>`;
+}
+function oosCell(col,val) {
+  const s=String(val===null||val===undefined?'':val).trim();
+  if (s==='Yes') return `<td class="c"><span class="yn yn-yes">Yes</span></td>`;
+  if (s==='No')  return `<td class="c"><span class="yn yn-no">No</span></td>`;
+  if (col==='Store Options') {
+    if (s==='Available at warehouse') return `<td><span class="badge b-sta">Available at warehouse</span></td>`;
+    if (s==='No stock available')     return `<td><span class="badge b-oth">No stock available</span></td>`;
+    if (s) return `<td><span class="badge b-re">${s}</span></td>`;
+    return `<td style="color:var(--muted)">—</td>`;
+  }
+  if (SALE_COLS.includes(col)) {
+    const n=parseFloat(s), zero=isNaN(n)||n<=0||s==='';
+    const disp=isNaN(n)||s===''?'—':(Number.isInteger(n)?n:n.toFixed(1));
+    return `<td class="c${zero?' zero-sale':''}" style="font-family:'DM Mono',monospace;font-size:.75rem">${disp}</td>`;
+  }
+  if (['Store Onhand','Store Intransit','# of Days to Arrive'].includes(col)) {
+    const n=parseFloat(s);
+    if (isNaN(n)||s==='') return `<td class="c" style="color:var(--muted)">—</td>`;
+    return `<td class="c" style="font-family:'DM Mono',monospace;font-size:.75rem">${Number.isInteger(n)?n:n.toFixed(1)}</td>`;
+  }
+  if (col==='Size') return `<td class="c">${s||'—'}</td>`;
+  return `<td>${s||'<span style="color:var(--muted)">—</span>'}</td>`;
+}
+
+// ── HELPERS ───────────────────────────────────────────────
+function isCtr(col) { return ['Size','WHSE INV','ON Order','Store Onhand','Store Intransit','L30','L60','L90','Avg Weekly Sales','Avg Monthly Sales','# of Days to Arrive','Purge Quantity','Reason','ETA','Sizes OH'].includes(col); }
+function sortBy(idx) { if (sortCol===idx) sortAsc=!sortAsc; else { sortCol=idx; sortAsc=true; } renderTable(); }
+
+// ── CSV ───────────────────────────────────────────────────
+function handleExportCSV() {
+  if (activeTabId==='purge') exportCSV();
+  else if (activeTabId==='newlaunch') exportNewLaunchCSV();
+  else exportOosCSV();
+}
+function escCSV(v,col) {
+  const s=String(v??'');
+  if (TEXT_COLS.includes(col)) return `"${s.replace(/"/g,'""')}"`;
+  return (s.includes(',')||s.includes('"')||s.includes('\n'))?`"${s.replace(/"/g,'""')}"`  :s;
+}
+function downloadCSV(rows,cols,fn) {
+  const csv=cols.map(c=>`"${c}"`).join(',')+'\n'+rows.map(r=>cols.map(c=>escCSV(r[c],c)).join(',')).join('\n');
+  Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),download:fn}).click();
+}
+function exportCSV() {
+  const rows=getFilteredRows().filter(r=>!r._isSibling);
+  const cols=COL_GROUPS.flatMap(g=>g.cols.filter(c=>headers.includes(c)));
+  downloadCSV(rows,cols,`purge-${activeStore.replace(/ /g,'-')}-${activeView.replace(/ /g,'-')}-${new Date().toISOString().slice(0,10)}.csv`);
+}
+function exportNewLaunchCSV() {
+  const rows=getFilteredNewLaunch(); if (!rows.length) { alert('No data.'); return; }
+  const cols=['Product Type','Item Name','Estimated ETA to Stores','New Launch/Restock'].filter(c=>rows[0].hasOwnProperty(c));
+  downloadCSV(rows,cols.length?cols:Object.keys(rows[0]),`new-launch-${new Date().toISOString().slice(0,10)}.csv`);
+}
+function exportOosCSV() {
+  const rows=getFilteredOos(); if (!rows.length) { alert('No OOS data.'); return; }
+  downloadCSV(rows,['Product Type','Parent Name','Size','Store Onhand','Store Intransit','WHSE INV','ON Order','ETA','# of Days to Arrive','Avg Weekly Sales','Avg Monthly Sales','L30','L60','L90','Store Options'],`oos-${activeStore.replace(/ /g,'-')}-${new Date().toISOString().slice(0,10)}.csv`);
+}
+</script>
+</body>
+</html>
