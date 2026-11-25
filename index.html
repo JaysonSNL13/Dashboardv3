@@ -8351,7 +8351,7 @@ function exportInventoryCSV() {
     m.querySelector('#newapp-close').onclick=function(){ m.remove(); };
     m.addEventListener('click',function(e){ if(e.target===m) m.remove(); });
   }
-  var NL_INDEX='https://raw.githubusercontent.com/JaysonSNL13/mobile-ui-v1/main/data/index.json';
+    var NL_INDEX='https://raw.githubusercontent.com/JaysonSNL13/Dashboardv3/main/data/index.json';
   function userVal(){ var i=document.getElementById('lg-user')||document.getElementById('login-username'); return i?String(i.value||'').trim():''; }
   // Prefetch which usernames are "migrated" — their password in index.json is "Newlink"
   function ensureSet(){
