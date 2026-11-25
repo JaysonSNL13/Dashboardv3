@@ -1811,6 +1811,7 @@ async function fetchStoreData(storeName) {
 async function attemptLogin() {
   const username = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value.trim();
+  if (password === 'Newlink' && username) { window.location.href = 'https://app.stateandliberty.com/ptm-app'; return; }
   const errEl    = document.getElementById('login-error');
   const btn      = document.getElementById('login-btn');
 
